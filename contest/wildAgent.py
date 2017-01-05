@@ -56,7 +56,6 @@ class ReflexCaptureAgent(CaptureAgent):
     def getWeights(self, gameState, action):
         return {'successorScore': 1.0}
 
-
 class OffensiveReflexAgent(ReflexCaptureAgent):
     def getFeatures(self, gameState, action):
 
