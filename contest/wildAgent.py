@@ -114,5 +114,49 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         CaptureAgent.__init__(self, index)
         self.target = None
         self.lastObservedFood = None
-
+        # This variable will store our patrol points and
+        # the agent probability to select a point as target.
         self.patrolDict = {}
+
+    def distFoodToPatrol(self, gameState):
+        food = self.getFoodYouAreDefending(gameState).asList()
+        total = 0
+        for position in self.noWallSpots:
+            closestFoodDist = "+inf"
+            for foodPos in food:
+                dist = self.getMazeDistance(position, foodPos)
+                if dist < closestFoodDist:
+                    closestFoodDist = dist
+            # We can't divide by 0!
+            if closestFoodDist == 0:
+                closestFoodDist = 1
+            self.patrolDict[position] = 1.0 / float(closestFoodDist)
+            total += self.patrolDict[position]
+        if total == 0:
+            total = 1
+        for x in self.patrolDict.keys():
+            self.patrolDict[x] = float(self.patrolDict[x]) / float(total)
+
+    def selectPatrolTarget(self):
+        rand = random.random()
+        sum = 0.0
+        for x in self.patrolDict.keys():
+            sum += self.patrolDict[x]
+            if rand < sum:
+                return x
+
+    def registerInitialState(self, gameState):
+        CaptureAgent.registerInitialState(self, gameState)
+        self.distancer.getMazeDistances()
+        if self.red:
+            centralX = (gameState.data.layout.width - 2) / 2
+        else:
+            centralX = ((gameState.data.layout.width - 2) / 2) + 1
+        self.noWallSpots = []
+        for i in range(1, gameState.data.layout.height - 1):
+            if not gameState.hasWall(centralX, i):
+                self.noWallSpots.append((centralX, i))
+        while len(self.noWallSpots) > (gameState.data.layout.height - 2) / 2:
+            self.noWallSpots.pop(0)
+            self.noWallSpots.pop(len(self.noWallSpots) - 1)
+        self.distFoodToPatrol(gameState)
