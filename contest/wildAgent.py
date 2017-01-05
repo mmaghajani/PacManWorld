@@ -35,12 +35,29 @@ def createTeam(firstIndex, secondIndex, isRed,
 
 class ReflexCaptureAgent(CaptureAgent):
     def getSuccessor(self, gameState, action):
-      #TODO
-        return 0
+        successor = gameState.generateSuccessor(self.index, action)
+        pos = successor.getAgentState(self.index).getPosition()
+        if pos != nearestPoint(pos):
+            return successor.generateSuccessor(self.index, action)
+        else:
+            return successor
+
+    def evaluate(self, gameState, action):
+        features = self.getFeatures(gameState, action)
+        weights = self.getWeights(gameState, action)
+        return features * weights
+
+    def getFeatures(self, gameState, action):
+        features = util.Counter()
+        successor = self.getSuccessor(gameState, action)
+        features['successorScore'] = self.getScore(successor)
+        return features
+
+    def getWeights(self, gameState, action):
+        return {'successorScore': 1.0}
 
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
-
     def getFeatures(self, gameState, action):
 
         features = util.Counter()
@@ -93,7 +110,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
-
     def __init__(self, index):
         CaptureAgent.__init__(self, index)
         self.target = None
