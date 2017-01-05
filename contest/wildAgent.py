@@ -94,7 +94,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
     class DefensiveReflexAgent(ReflexCaptureAgent):
-        "Gera Monte, o agente defensivo."
 
         def __init__(self, index):
             CaptureAgent.__init__(self, index)
