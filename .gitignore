@@ -144,3 +144,5 @@ fabric.properties
 # *.ipr
 
 .idea/
+
+contest/score
