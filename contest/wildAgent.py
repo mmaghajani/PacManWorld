@@ -159,3 +159,42 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             self.noWallSpots.pop(0)
             self.noWallSpots.pop(len(self.noWallSpots) - 1)
         self.distFoodToPatrol(gameState)
+
+    def chooseAction(self, gameState):
+        if self.lastObservedFood and len(self.lastObservedFood) != len(self.getFoodYouAreDefending(gameState).asList()):
+            self.distFoodToPatrol(gameState)
+
+        mypos = gameState.getAgentPosition(self.index)
+        if mypos == self.target:
+            self.target = None
+        x = self.getOpponents(gameState)
+        enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
+        invaders = filter(lambda x: x.isPacman and x.getPosition() != None, enemies)
+        if len(invaders) > 0:
+            positions = [agent.getPosition() for agent in invaders]
+            self.target = min(positions, key=lambda x: self.getMazeDistance(mypos, x))
+        # If we can't see an invader, but our pacdots were eaten,
+        # we will check the position where the pacdot disappeared.
+        elif self.lastObservedFood != None:
+            eaten = set(self.lastObservedFood) - set(self.getFoodYouAreDefending(gameState).asList())
+            if len(eaten) > 0:
+                self.target = eaten.pop()
+        self.lastObservedFood = self.getFoodYouAreDefending(gameState).asList()
+        if self.target == None and len(self.getFoodYouAreDefending(gameState).asList()) <= 4:
+            food = self.getFoodYouAreDefending(gameState).asList() \
+                   + self.getCapsulesYouAreDefending(gameState)
+            self.target = random.choice(food)
+        elif self.target == None:
+            self.target = self.selectPatrolTarget()
+        actions = gameState.getLegalActions(self.index)
+        goodActions = []
+        fvalues = []
+        for a in actions:
+            new_state = gameState.generateSuccessor(self.index, a)
+            if not new_state.getAgentState(self.index).isPacman and not a == Directions.STOP:
+                newpos = new_state.getAgentPosition(self.index)
+                goodActions.append(a)
+                fvalues.append(self.getMazeDistance(newpos, self.target))
+        best = min(fvalues)
+        ties = filter(lambda x: x[0] == best, zip(fvalues, goodActions))
+        return random.choice(ties)[1]
