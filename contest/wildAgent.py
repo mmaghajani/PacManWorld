@@ -185,8 +185,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         CaptureAgent.__init__(self, index)
         self.target = None
         self.lastObservedFood = None
-        # This variable will store our patrol points and
-        # the agent probability to select a point as target.
         self.patrolDict = {}
 
     def distFoodToPatrol(self, gameState):
