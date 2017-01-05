@@ -93,10 +93,32 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
+    class DefensiveReflexAgent(ReflexCaptureAgent):
+        "Gera Monte, o agente defensivo."
 
-    def __init__(self, index):
-        CaptureAgent.__init__(self, index)
-        self.target = None
-        self.lastObservedFood = None
+        def __init__(self, index):
+            CaptureAgent.__init__(self, index)
+            self.target = None
+            self.lastObservedFood = None
+            # This variable will store our patrol points and
+            # the agent probability to select a point as target.
+            self.patrolDict = {}
 
-        self.patrolDict = {}
+        def distFoodToPatrol(self, gameState):
+            food = self.getFoodYouAreDefending(gameState).asList()
+            total = 0
+            for position in self.noWallSpots:
+                closestFoodDist = "+inf"
+                for foodPos in food:
+                    dist = self.getMazeDistance(position, foodPos)
+                    if dist < closestFoodDist:
+                        closestFoodDist = dist
+                # We can't divide by 0!
+                if closestFoodDist == 0:
+                    closestFoodDist = 1
+                self.patrolDict[position] = 1.0 / float(closestFoodDist)
+                total += self.patrolDict[position]
+            if total == 0:
+                total = 1
+            for x in self.patrolDict.keys():
+                self.patrolDict[x] = float(self.patrolDict[x]) / float(total)
