@@ -121,3 +121,27 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 total = 1
             for x in self.patrolDict.keys():
                 self.patrolDict[x] = float(self.patrolDict[x]) / float(total)
+
+        def selectPatrolTarget(self):
+            rand = random.random()
+            sum = 0.0
+            for x in self.patrolDict.keys():
+                sum += self.patrolDict[x]
+                if rand < sum:
+                    return x
+
+        def registerInitialState(self, gameState):
+            CaptureAgent.registerInitialState(self, gameState)
+            self.distancer.getMazeDistances()
+            if self.red:
+                centralX = (gameState.data.layout.width - 2) / 2
+            else:
+                centralX = ((gameState.data.layout.width - 2) / 2) + 1
+            self.noWallSpots = []
+            for i in range(1, gameState.data.layout.height - 1):
+                if not gameState.hasWall(centralX, i):
+                    self.noWallSpots.append((centralX, i))
+            while len(self.noWallSpots) > (gameState.data.layout.height - 2) / 2:
+                self.noWallSpots.pop(0)
+                self.noWallSpots.pop(len(self.noWallSpots) - 1)
+            self.distFoodToPatrol(gameState)
